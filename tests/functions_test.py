@@ -12,6 +12,9 @@ def test_list_files_recursive():
     assert os.path.abspath("tests/data/sub11/sub12/sub13/export_highlights.pdf") in pdf_files
 
 
-
+def test_collect_pdf_content():
+    pdf_pages = collect_pdf_content([os.path.abspath("tests/data/Binder1.pdf")])
+    assert len(pdf_pages) == 8
+    # assert page_size == (595, 842)
 
 
