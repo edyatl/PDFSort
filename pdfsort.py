@@ -37,11 +37,11 @@ PaperSizes = {  # add new: ensure that first number is <= second number
     "B8": [176, 249],
     "B9": [125, 176],
     "B10": [88, 125],
-    "C2": [1837, 578],
+    "C2": [578, 1837],
     "C3": [578, 919],
-    "C4": [919, 649],
-    "C5": [649, 459],
-    "C6": [459, 323],
+    "C4": [649, 919],
+    "C5": [459, 649],
+    "C6": [323, 459],
     "Invoice": [396, 612],
     "Executive": [522, 756],
     "Letter": [612, 792],
@@ -96,8 +96,11 @@ def collect_pdf_content(file_paths: list) -> list:
     """
     all_pages = []
     for file_path in file_paths:
-        reader = PdfReader(file_path)
-        all_pages.extend(reader.pages)
+        try:
+            reader = PdfReader(file_path)
+            all_pages.extend(reader.pages)
+        except FileNotFoundError as err:
+            print(f"Error: {err}\nFile ignored.")
     return all_pages
 
 def find_fmt(iwidth: float, iheight: float, orient: bool = True) -> str:
@@ -323,7 +326,7 @@ def main():
                 print('PDFSort version: %s' % __version__)
                 sys.exit()
             else:
-                # If an unknown option is passed, rise an error
+                # If an unknown option is passed, raise an error
                 assert False, "Unhandled option"
 
         if write_flg:
