@@ -6,6 +6,26 @@ from pdfsort import *
 from pypdf._page import PageObject
 from pypdf.generic import RectangleObject
 
+from unittest.mock import patch, mock_open, MagicMock
+import unittest.mock
+
+def set_pdf_pages(n: int = 2) -> list:
+    p = {
+            "/CropBox": [0, 0, 595.32000000000005, 841.91999999999996],
+            "/MediaBox": [0, 0, 595.32000000000005, 841.91999999999996],
+        }
+    pages_data = []
+    for i in range(n):
+        pages_data.append(p)
+    
+    pages = []
+    for page_data in pages_data:
+        page = PageObject()
+        page.mediabox = RectangleObject(page_data["/MediaBox"])
+        page.cropbox = RectangleObject(page_data["/CropBox"])
+        pages.append(page)
+    return pages
+
 def test_list_files_recursive():
     pdf_files = list_files_recursive("tests/data")
     assert len(pdf_files) == 3
@@ -42,22 +62,7 @@ def test_collect_pdf_content():
     assert len(pdf_pages) == 8
 
 def test_get_format_info():
-    pages_data = [
-        {
-            "/CropBox": [0, 0, 595.32000000000005, 841.91999999999996],
-            "/MediaBox": [0, 0, 595.32000000000005, 841.91999999999996],
-        },
-        {
-            "/CropBox": [0, 0, 595.32000000000005, 841.91999999999996],
-            "/MediaBox": [0, 0, 595.32000000000005, 841.91999999999996],
-        },
-    ]
-    pages = []
-    for page_data in pages_data:
-        page = PageObject()
-        page.mediabox = RectangleObject(page_data["/MediaBox"])
-        page.cropbox = RectangleObject(page_data["/CropBox"])
-        pages.append(page)
+    pages = set_pdf_pages()
     formats_dict = get_format_info(pages)
     expected_dict = {"A4": 2}
     assert formats_dict == expected_dict, f"Expected {expected_dict}, but got {formats_dict}"
@@ -221,3 +226,133 @@ def test_find_fmt_paper_orientation():
     assert find_fmt(6742, 2384) == "A1х3-L"
     assert find_fmt(4768, 3370) == "A0х2-L"
     assert find_fmt(7152, 3370) == "A0х3-L"
+
+@patch("builtins.print")
+def test_draw_format_info_tab_empty_dict(mock_print):
+    draw_format_info_tab({})
+    mock_print.assert_not_called
+
+@patch("builtins.print")
+def test_draw_format_info_tab_single_entry(mock_print):
+    draw_format_info_tab({"A4": 5})
+    expected = "                     Format     Count\n"
+    expected += "---------------------------  --------\n"
+    expected += "                         A4         5"
+    mock_print.assert_called_with(expected)
+
+@patch("builtins.print")
+def test_draw_format_info_tab_multiple_entries(mock_print):
+    draw_format_info_tab({"A4": 5, "Letter": 10})
+    expected = "                     Format     Count\n"
+    expected += "---------------------------  --------\n"
+    expected += "                         A4         5\n"
+    expected += "                     Letter        10"
+    mock_print.assert_called_with(expected)
+
+@patch("builtins.print")
+def test_draw_format_info_tab_sorted_order(mock_print):
+    draw_format_info_tab({"Letter": 10, "A4": 5})
+    expected = "                     Format     Count\n"
+    expected += "---------------------------  --------\n"
+    expected += "                         A4         5\n"
+    expected += "                     Letter        10"
+    mock_print.assert_called_with(expected)
+
+
+def test_mk_output_dir():
+    with unittest.mock.patch("os.path.exists") as mocked_exists, unittest.mock.patch(
+        "os.makedirs"
+    ) as mocked_mkdirs:
+        # arrange
+        mocked_exists.return_value = False
+
+        # act
+        mk_output_dir("/tmp/test_mk_output_dir")
+
+        # assert
+        mocked_exists.assert_called_once_with("/tmp/test_mk_output_dir")
+        mocked_mkdirs.assert_called_once_with("/tmp/test_mk_output_dir")
+
+
+def test_mk_output_dir_already_exists():
+    with unittest.mock.patch("os.path.exists") as mocked_exists, unittest.mock.patch(
+        "os.makedirs"
+    ) as mocked_mkdirs:
+        # arrange
+        mocked_exists.return_value = True
+
+        # act
+        mk_output_dir("/tmp/test_mk_output_dir")
+
+        # assert
+        mocked_exists.assert_called_once_with("/tmp/test_mk_output_dir")
+        mocked_mkdirs.assert_not_called()
+
+@patch("pdfsort.mk_output_dir")
+@patch("pdfsort.open", mock_open())
+@patch("pdfsort.PdfWriter")
+def test_write_fmt_file(mock_pdf_writer, mock_mk_output_dir):
+    pages = set_pdf_pages()
+    writer = mock_pdf_writer.return_value
+    writer.pages = pages
+    writer.add_metadata.return_value = None
+
+    write_fmt_file("A4", pages, 0)
+
+    mock_mk_output_dir.assert_called_once()
+    writer.add_metadata.assert_called_once()
+    writer.write.assert_called_once()
+    writer.close.assert_called_once()
+
+@patch("pdfsort.subwrite_limit_fmt_file")
+@patch("pdfsort.PdfWriter")
+def test_write_fmt_file_with_limit(mock_pdf_writer, mock_subwrite_limit_fmt_file):
+    metadata = {
+        "/Creator": "PDFSort",
+        "/Producer": "PDFSort",
+    }
+    pages = set_pdf_pages(5)
+    writer = mock_pdf_writer.return_value
+    writer.pages = pages
+    writer.add_metadata.return_value = None
+
+    write_fmt_file("A4", pages, 2)
+
+    mock_subwrite_limit_fmt_file.assert_called()
+    mock_subwrite_limit_fmt_file.assert_called_with("A4", pages, 4, 5, 2, metadata)
+    writer.close.assert_called_once()
+
+@patch("pdfsort.subwrite_limit_fmt_file")
+@patch("pdfsort.PdfWriter")
+def test_write_fmt_file_with_limit_even(mock_pdf_writer, mock_subwrite_limit_fmt_file):
+    metadata = {
+        "/Creator": "PDFSort",
+        "/Producer": "PDFSort",
+    }
+    pages = set_pdf_pages(4)
+    writer = mock_pdf_writer.return_value
+    writer.pages = pages
+    writer.add_metadata.return_value = None
+
+    write_fmt_file("A4", pages, 2)
+
+    mock_subwrite_limit_fmt_file.assert_called()
+    mock_subwrite_limit_fmt_file.assert_called_with("A4", pages, 2, 4, 1, metadata)
+    writer.close.assert_called_once()
+
+@patch("pdfsort.mk_output_dir")
+@patch("pdfsort.open", mock_open())
+@patch("pdfsort.PdfWriter")
+def test_subwrite_limit_fmt_file(mock_pdf_writer, mock_mk_output_dir):
+    pages = set_pdf_pages(5)
+    subwriter = mock_pdf_writer.return_value
+    subwriter.add_page.return_value = None
+    subwriter.add_metadata.return_value = None
+
+    subwrite_limit_fmt_file("A4", pages, 0, 2, 0, {})
+
+    mock_mk_output_dir.assert_called_once()
+    subwriter.add_page.assert_called()
+    subwriter.add_metadata.assert_called_once()
+    subwriter.write.assert_called_once()
+    subwriter.close.assert_called_once()

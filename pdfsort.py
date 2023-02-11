@@ -172,9 +172,11 @@ def draw_format_info_tab(format_info: dict):
     :param format_info: dict
         A dictionary where page format as a key and their amount as a value.
     """
-    print("{:>27} {:>9}\n{}  --------".format("Format", "Count", ("-" * 27)))
-    for fmt, cnt in sorted(format_info.items()):
-        print(f"{fmt:>27} {cnt:>9}")
+    if format_info:
+        output = "{:>27} {:>9}\n{}  --------\n".format("Format", "Count", ("-" * 27))
+        for fmt, cnt in sorted(format_info.items()):
+            output += f"{fmt:>27} {cnt:>9}\n"
+        print(output.rstrip("\n"))
 
 def mk_output_dir(dirpath: str):
     """
@@ -239,16 +241,15 @@ def write_fmt_file(fmt: str, pages: list, limit: int = 0):
         if find_fmt(pg.mediabox.width, pg.mediabox.height, False) == fmt:
             writer.add_page(pg)
 
-    # Add the metadata
     metadata = {
         "/Creator": "PDFSort",
         "/Producer": "PDFSort",
     }
-    writer.add_metadata(metadata)
 
     if limit > 0 and limit < len(writer.pages):
         np: int = len(writer.pages)
-        fnum: int = np // limit + 1
+        fnum: int = np // limit
+        fnum = fnum if np % limit == 0 else fnum + 1
         start: int = 0
         stop: int = limit
         for i in range(fnum):
@@ -258,6 +259,7 @@ def write_fmt_file(fmt: str, pages: list, limit: int = 0):
             start += limit
             stop += limit
     else:
+        writer.add_metadata(metadata)  # Add the metadata
         mk_output_dir(output_dir)
         dirname = os.path.basename(input_dir)
 
