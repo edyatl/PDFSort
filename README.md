@@ -4,6 +4,22 @@
 >Developed by [@edyatl](https://github.com/edyatl) February 2023 <edyatl@yandex.ru>
 
 PDFSort is a Python application that processes PDF files in a given directory. It recursively retrieves all PDF files from the directory and its subdirectories, determines the page sizes (formats), calculates the number of each format, and draws a table with the totals. It can also write new PDF files, each of which will have pages of only one size (format).
+### Usage
+
+```
+    USAGE: 
+        pdfsort.py [options] [<DIRECTORY>]
+
+    Arguments:
+        DIRECTORY Provide directory path as argument or leave blank to use current dir.
+
+    Options:
+        -h, --help      Shows this help message and exit
+        -l, --limit     Adds to write option limit of pages number per a file
+        -t, --table     Draw a table with pages formats and their amount
+        -w, --write     Write PDF files with pages of only one size to output dir
+        -v, --version   Shows current version of the program and exit
+```
 
 ### Functions
 
