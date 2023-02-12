@@ -5,6 +5,7 @@
 
 PDFSort is a Python application that helps you manage and organize your PDF files. It recursively retrieves all PDF files from the given directory and its subdirectories, determines the page format of each page in a PDF file, calculates the total number of pages for each format, and visualizes the information in a table. It can also write new PDF files with pages of only one format, making it easier to sort and organize your PDFs.
 
+
 ### Key Features
 
 * Recursive search for PDF files in a directory and its subdirectories
@@ -38,6 +39,7 @@ You can use PDFSort by running the pdfsort.py file with the following options:
         -v, --version   Shows current version of the program and exit
 ```
 
+
 ### Functions
 
 The PDFSort application provides the following functions:
@@ -56,9 +58,11 @@ The PDFSort application provides the following functions:
 
 1. `write_fmt_file()` - Writes PDF files with pages of only one size (format) or, if the limit parameter is specified, calls the subwrite_limit_fmt_file subfunction to write files with indexes split by the page number limit.
 
+
 ### Purpose
 
 The main purpose of the PDFSort application is to allow users easily manage and organize their PDF files.
+
 
 ### Strengths
 
@@ -75,6 +79,7 @@ The main purpose of the PDFSort application is to allow users easily manage and 
 
 
 1. Output file writing: This app can write new PDF files with pages of only one format, making it easier for users to sort and organize their PDFs.
+
 
 ### Weaknesses
 
@@ -96,8 +101,8 @@ The main purpose of the PDFSort application is to allow users easily manage and 
 
 * Optimizing the performance of the app to handle larger numbers of PDF files and larger file sizes.
 
+
 ### Contributing
 
-There are a number of ways that you could contribute to this project, including fixing bugs, adding new features, and improving the overall performance of the application. If you're interested in getting involved, I'd love to hear from you!
+If you're interested in contributing to this project, there are many ways to get involved. You can fix bugs, add new features, and improve the overall performance of the application. Your ideas, patches, bug reports, and suggestions are always welcome.
 
-Any ideas, patches, bug reports and so on are always welcome.
