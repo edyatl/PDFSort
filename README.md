@@ -21,7 +21,7 @@ PDFSort is a Python application that helps you manage and organize your PDF file
 
 ### Usage
 
-You can use PDFSort by running the pdfsort.py file with the following options:
+You can use PDFSort by running the `pdfsort.py` file with the following options:
 
 
 ```
@@ -105,4 +105,9 @@ The main purpose of the PDFSort application is to allow users easily manage and 
 ### Contributing
 
 If you're interested in contributing to this project, there are many ways to get involved. You can fix bugs, add new features, and improve the overall performance of the application. Your ideas, patches, bug reports, and suggestions are always welcome.
+
+### License
+This project is licensed under the Apache 2 License - see the [LICENSE](./LICENSE) file for details.
+
+This project uses the [**pypdf**](https://github.com/py-pdf/pypdf) library, which is licensed under its own custom license. See the pypdf library [license](https://github.com/py-pdf/pypdf/blob/main/LICENSE) file for details.
 
